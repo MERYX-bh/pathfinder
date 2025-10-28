@@ -5,7 +5,12 @@ import AssistantWidget from "./layout/AssistantWidget.jsx";
 import Home from "./Pages/Home.jsx";
 import OnboardingStep1 from "./Pages/OnboardingStep1.jsx"; 
 import QuickTest from "./Pages/tests/QuickTest.jsx";
-import Test1 from "./Pages/Test1.jsx";
+import FullTest from "./Pages/tests/FullTest.jsx";
+import AnalyzePersonality from "./Pages/tests/AnalyzePersonality.jsx";
+import Completion from "./Pages/tests/Completion.jsx";
+import ResultsPage from "./Pages/tests/Results.jsx";
+import RecommendedJobs from "./Pages/tests/RecommendedJobs.jsx";
+import Formations from "./Pages/tests/Formations.jsx";
 
 export default function App() {
   return (
@@ -17,6 +22,13 @@ export default function App() {
           <Route path="/onboarding/step-1" element={<OnboardingStep1 />} /> {/* <-- ajouté */}
           <Route path="/tests/rapide/:step" element={<QuickTest />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/tests/complet" element={<FullTest />} />
+          <Route path="/tests/complet/analyse" element={<AnalyzePersonality />} />
+          <Route path="/tests/complet/fin" element={<Completion />} />
+          <Route path="/tests/complet/resultats" element={<ResultsPage />} />
+          <Route path="/metiers" element={<RecommendedJobs />} />
+          <Route path="/formations" element={<Formations />} />
+
         </Routes>
       </main>
       <AssistantWidget />

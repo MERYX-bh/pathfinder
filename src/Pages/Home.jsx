@@ -200,12 +200,12 @@ export default function Home() {
                 </div>
 
                 <div className="mt-5">
-                 <Link
-  to="/tests/rapide/1"
-  className="inline-block mt-4 rounded-xl border border-blue-300 px-4 py-2.5 text-blue-600 hover:bg-blue-50"
->
-  Test rapide
-</Link>
+                  <Link
+                    to="/tests/rapide/1"
+                    className="inline-block mt-4 rounded-xl border border-blue-300 px-4 py-2.5 text-blue-600 hover:bg-blue-50"
+                  >
+                    Test rapide
+                  </Link>
                 </div>
               </div>
             </div>
@@ -253,20 +253,26 @@ export default function Home() {
             </div>
           </Card>
 
-          <Card className="rounded-2xl border border-gray-200 p-6">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 grid place-items-center rounded-xl bg-orange-500/10 text-orange-600">
-                <TrendIcon />
+          {/* Métiers → /metiers (carte entière cliquable) */}
+          <Link
+            to="/metiers"
+            className="block focus:outline-none focus:ring-2 focus:ring-orange-400 rounded-2xl"
+          >
+            <Card className="rounded-2xl border border-gray-200 p-6 hover:border-orange-300 hover:shadow-md cursor-pointer transition">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 grid place-items-center rounded-xl bg-orange-500/10 text-orange-600">
+                  <TrendIcon />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Métiers</h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Explorez les fiches métiers détaillées et les opportunités.
+                  </p>
+                  <p className="mt-3 text-xs text-gray-500">🤖 Recommandations IA</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold">Métiers</h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  Explorez les fiches métiers détaillées et les opportunités.
-                </p>
-                <p className="mt-3 text-xs text-gray-500">🤖 Recommandations IA</p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </Link>
         </div>
 
         {/* Bloc assistant IA */}
