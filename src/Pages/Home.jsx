@@ -20,11 +20,6 @@ const BrainIcon = () => (
     <path d="M8 10a3 3 0 1 1 0-6m0 6v7M16 10a3 3 0 1 0 0-6m0 6v7M12 9v10" stroke="currentColor" strokeWidth="1.6" fill="none" />
   </svg>
 );
-const ZapIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M13 2 3 14h7l-1 8 12-14h-7l-1-6Z" stroke="currentColor" strokeWidth="1.4" fill="none" />
-  </svg>
-);
 const BookIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M4 5h10a3 3 0 0 1 3 3v11H7a3 3 0 0 0-3 3V5Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
@@ -113,9 +108,9 @@ export default function Home() {
           Découvrez votre personnalité et vos métiers recommandés grâce à nos tests psychographiques validés.
         </p>
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {/* Test complet */}
-          <Card className="rounded-2xl border-2 border-orange-100 p-6">
+        {/* Carte unique centrée */}
+        <div className="mt-8 flex justify-center">
+          <Card className="w-full max-w-2xl rounded-2xl border-2 border-orange-100 p-6">
             <div className="flex items-start gap-3">
               <div className="rounded-xl bg-orange-500/10 text-orange-600 grid place-items-center h-10 w-10">
                 <BrainIcon />
@@ -156,55 +151,6 @@ export default function Home() {
                     <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-4 py-2.5">
                       Commencer le test complet
                     </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Test rapide */}
-          <Card className="rounded-2xl border border-blue-200 p-6">
-            <div className="flex items-start gap-3">
-              <div className="rounded-xl bg-blue-500/10 text-blue-600 grid place-items-center h-10 w-10">
-                <ZapIcon />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">Test rapide</h3>
-                  <Badge color="gray">Rapide</Badge>
-                </div>
-
-                <p className="mt-2 text-sm text-gray-600">
-                  Idéal si vous avez déjà une idée de métier en tête, ou si vous voulez découvrir vos forces et faiblesses sans idée précise.
-                </p>
-
-                <ul className="mt-3 space-y-1 text-sm text-gray-700">
-                  <li className="flex items-center gap-2">
-                    <span className="text-blue-600">•</span> 10 questions ciblées
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-blue-600">•</span> Suggestions de métiers
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-blue-600">•</span> Analyse des forces/faiblesses
-                  </li>
-                </ul>
-
-                <div className="mt-4 flex items-center gap-6 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <span role="img" aria-label="durée">⏱</span> Durée : 5-7 minutes
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span role="img" aria-label="idéal">🧭</span> Idéal pour : Confirmer ou découvrir
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <Link
-                    to="/tests/rapide/1"
-                    className="inline-block mt-4 rounded-xl border border-blue-300 px-4 py-2.5 text-blue-600 hover:bg-blue-50"
-                  >
-                    Test rapide
                   </Link>
                 </div>
               </div>
