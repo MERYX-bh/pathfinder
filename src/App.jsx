@@ -11,6 +11,9 @@ import Completion from "./Pages/tests/Completion.jsx";
 import ResultsPage from "./Pages/tests/Results.jsx";
 import RecommendedJobs from "./Pages/tests/RecommendedJobs.jsx";
 import Formations from "./Pages/tests/Formations.jsx";
+import Login from "./Pages/Auth/Login.jsx";
+import PremiumSignup from "./Pages/Auth/PremiumSignup.jsx";
+import Checkout from "./Pages/payments/Checkout.jsx";
 
 export default function App() {
   return (
@@ -19,16 +22,17 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/onboarding/step-1" element={<OnboardingStep1 />} /> {/* <-- ajouté */}
+          <Route path="/connexion" element={<Login />} />
+          <Route path="/onboarding/step-1" element={<OnboardingStep1 />} />
           <Route path="/tests/rapide/:step" element={<QuickTest />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/tests/complet" element={<FullTest />} />
           <Route path="/tests/complet/analyse" element={<AnalyzePersonality />} />
-          <Route path="/tests/complet/fin" element={<Completion />} />
           <Route path="/tests/complet/resultats" element={<ResultsPage />} />
           <Route path="/metiers" element={<RecommendedJobs />} />
           <Route path="/formations" element={<Formations />} />
-
+          <Route path="/premium/inscription" element={<PremiumSignup />} />
+          <Route path="/paiement" element={<Checkout />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <AssistantWidget />
