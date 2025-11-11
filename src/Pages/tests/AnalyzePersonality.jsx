@@ -15,7 +15,7 @@ export default function AnalyzePersonality() {
       setPct(p);
       if (p >= 100) {
         clearInterval(tick);
-        navigate("/tests/complet/fin");
+        navigate("/tests/complet/resultats");
       }
     }, 30);
     return () => clearInterval(tick);

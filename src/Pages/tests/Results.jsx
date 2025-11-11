@@ -131,12 +131,8 @@ export default function ResultsPage() {
     navigate("/tests/complet");
   }
 
-  function handlePayNow() {
-    if (isLoggedIn) {
-      navigate("/paiement");
-    } else {
+  function handlePayNow() { 
       navigate("/premium/inscription");
-    }
   }
 
   return (

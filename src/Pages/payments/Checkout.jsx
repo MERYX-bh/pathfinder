@@ -86,15 +86,16 @@ export default function Checkout() {
 
     // Simule un paiement + “activation” du Premium
     setPaying(true);
-    setTimeout(() => {
-      try {
-        localStorage.setItem("isPremium", "true");
-        localStorage.setItem("premium.email", email);
-      } catch {}
-      setPaying(false);
-      // Redirection vers les résultats (ou une page /merci)
-      navigate("/tests/complet/resultats");
-    }, 1000);
+   setTimeout(() => {
+  try {
+    localStorage.setItem("pf.premium", "1");          // Premium activé !
+    localStorage.setItem("auth.userEmail", email);    // utilisateur connecté
+  } catch {}
+
+  setPaying(false);
+  navigate("/tests/complet/resultats");
+}, 1000);
+
   }
 
   // format auto pour le n° de carte
