@@ -8,7 +8,9 @@ import { fullTestQuestions } from "../../data/fullTestQuestions.js";
 const Progress = ({ current, total }) => (
   <div className="w-full">
     <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-      <span>Question {current} sur {total}</span>
+      <span>
+        Question {current} sur {total}
+      </span>
       <span>{Math.round((current / total) * 100)}%</span>
     </div>
     <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
@@ -25,7 +27,9 @@ const DotPager = ({ current, total }) => (
     {Array.from({ length: total }).map((_, i) => (
       <span
         key={i}
-        className={`h-2.5 w-2.5 rounded-full ${i < current ? "bg-orange-500" : "bg-gray-200"}`}
+        className={`h-2.5 w-2.5 rounded-full ${
+          i < current ? "bg-orange-500" : "bg-gray-200"
+        }`}
       />
     ))}
   </div>
@@ -33,12 +37,18 @@ const DotPager = ({ current, total }) => (
 
 // Mapping des axes psychographiques
 const AXES = {
-  E: "EI", I: "EI",
-  S: "SN", N: "SN",
-  T: "TF", F: "TF",
-  J: "JP", P: "JP",
-  G: "MO", M: "MO",
-  PRACT: "LP", CONC: "LP",
+  E: "EI",
+  I: "EI",
+  S: "SN",
+  N: "SN",
+  T: "TF",
+  F: "TF",
+  J: "JP",
+  P: "JP",
+  G: "MO",
+  M: "MO",
+  PRACT: "LP",
+  CONC: "LP",
 };
 
 const TITLES = {
@@ -62,6 +72,11 @@ export default function FullTest() {
     JSON.parse(localStorage.getItem("fullTest.answers") || "[]")
   );
 
+  // état pour le pop-up email
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+
   useEffect(() => {
     localStorage.setItem("fullTest.answers", JSON.stringify(answers));
   }, [answers]);
@@ -81,19 +96,34 @@ export default function FullTest() {
 
   const canNext = selected !== null;
 
+  // Soumission de l'email dans le pop-up
+  function handleConfirmEmail() {
+    setEmailError("");
+
+    // petite validation basique
+    if (!email || !email.includes("@")) {
+      setEmailError("Merci d’entrer un email valide.");
+      return;
+    }
+
+    // On ne sauvegarde plus l'email, on va juste sur la page d'analyse
+    setShowEmailModal(false);
+    navigate("/tests/complet/analyse");
+  }
+
   // *** ACTION DU BOUTON SUIVANT ***
   function next() {
     if (!canNext) return;
 
+    // Dernière question → ouvrir le pop-up email
     if (index === total - 1) {
-      // fin → écran d'analyse
-      navigate("/tests/complet/analyse");
+      setShowEmailModal(true);
     } else {
       setIndex(index + 1);
     }
   }
 
-  // --- Calcul du score ---
+  // --- Calcul du score (utilisable plus tard si besoin) ---
   const score = useMemo(() => {
     const s = { EI: 0, SN: 0, TF: 0, JP: 0, MO: 0, LP: 0 };
 
@@ -113,17 +143,17 @@ export default function FullTest() {
     return s;
   }, [answers]);
 
-  const completion = answers.filter((x) => x !== undefined && x !== null).length;
+  const completion = answers.filter(
+    (x) => x !== undefined && x !== null
+  ).length;
 
   return (
     <div className="min-h-screen bg-white">
-
       {/* ======= TOPBAR ======= */}
       <header className="sticky top-0 z-10 border-b border-gray-100 bg-white/70 backdrop-blur">
         <div className="mx-auto max-w-4xl px-4 h-16 flex items-center justify-between">
           <div className="text-sm">
             <div className="font-semibold">Test complet</div>
-            <div className="text-gray-500">Profil psychographique</div>
           </div>
           <span className="rounded-full bg-orange-100 text-orange-700 px-3 py-1 text-xs">
             Test de Découverte
@@ -151,12 +181,20 @@ export default function FullTest() {
                   key={i}
                   onClick={() => onSelect(i)}
                   className={`w-full text-left rounded-xl border px-4 py-3 transition
-                    ${active ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:bg-gray-50"}`}
+                    ${
+                      active
+                        ? "border-orange-400 bg-orange-50"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <span
                       className={`h-4 w-4 rounded-full border
-                        ${active ? "border-orange-500 bg-orange-500" : "border-gray-300"}`}
+                        ${
+                          active
+                            ? "border-orange-500 bg-orange-500"
+                            : "border-gray-300"
+                        }`}
                     />
                     <span className="text-sm">{opt.label}</span>
                   </div>
@@ -176,7 +214,9 @@ export default function FullTest() {
               ← Précédent
             </Button>
 
-            <div className="text-xs text-gray-500">{completion}/{total} répondues</div>
+            <div className="text-xs text-gray-500">
+              {completion}/{total} répondues
+            </div>
 
             <Button
               onClick={next}
@@ -187,18 +227,68 @@ export default function FullTest() {
                   : "bg-gray-200 text-gray-500 cursor-not-allowed"
               }`}
             >
-              {index === total - 1 ? "Analyser ma personnalité" : "Suivant →"}
+              {index === total - 1
+                ? "Analyser ma personnalité"
+                : "Suivant →"}
             </Button>
           </div>
         </Card>
 
         <DotPager current={index + 1} total={total} />
       </main>
+
+      {/* ====== POP-UP EMAIL ====== */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-semibold">
+              Avant de voir tes résultats ✨
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Entre simplement ton email pour sauvegarder ton test et retrouver
+              tes résultats plus tard.
+            </p>
+
+            <div className="mt-4">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Ton email
+              </label>
+              <input
+                type="email"
+                className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                placeholder="ton.email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {emailError && (
+                <p className="mt-1 text-xs text-red-500">{emailError}</p>
+              )}
+            </div>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                className="rounded-xl border px-4 py-2.5"
+                onClick={() => setShowEmailModal(false)}
+              >
+                Annuler
+              </Button>
+              <Button
+                className="rounded-xl bg-orange-500 text-white px-4 py-2.5 hover:bg-orange-600"
+                onClick={handleConfirmEmail}
+              >
+                Voir mes résultats
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 /* ======================= COMPONENT RESULTATS ======================= */
+/* (ici plus besoin de la gate email, elle est gérée dans FullTest) */
 
 function Results({ score }) {
   const rows = [
@@ -217,7 +307,7 @@ function Results({ score }) {
   }
 
   const summary = rows.map(({ axis }) =>
-    (score[axis] >= 0 ? TITLES[axis][0] : TITLES[axis][1])
+    score[axis] >= 0 ? TITLES[axis][0] : TITLES[axis][1]
   );
 
   return (
@@ -225,7 +315,10 @@ function Results({ score }) {
       <h2 className="text-lg md:text-xl font-semibold">Votre profil</h2>
 
       <p className="text-sm text-gray-600 mt-1">
-        Résumé : <span className="font-medium text-gray-800">{summary.join(" • ")}</span>
+        Résumé :{" "}
+        <span className="font-medium text-gray-800">
+          {summary.join(" • ")}
+        </span>
       </p>
 
       <div className="mt-6 space-y-5">
@@ -253,7 +346,10 @@ function Results({ score }) {
           </Button>
         </Link>
         <Link to="/assistant">
-          <Button variant="outline" className="rounded-xl border px-4 py-2.5 hover:bg-white">
+          <Button
+            variant="outline"
+            className="rounded-xl border px-4 py-2.5 hover:bg-white"
+          >
             Demander conseil à l’IA
           </Button>
         </Link>

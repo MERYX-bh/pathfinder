@@ -2,7 +2,248 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-/* ---------------------- Données mock (fullstack & datasci) ---------------------- */
+/* ---------------------- Données de base réutilisables ---------------------- */
+
+// Formations “tech / digital”
+const TECH_FORMATIONS = [
+  {
+    id: "ecole42",
+    kind: "École d'informatique",
+    name: "École 42",
+    desc: "Formation gratuite et innovante en développement web et software",
+    duration: "3 ans",
+    cost: "Gratuit",
+    location: "Paris, Lyon, Perpignan",
+    admission: "Sur dossier et tests",
+    marketStat: {
+      label: "Développeurs web issus de cette école",
+      pct: 28,
+      trend: "Croissance",
+    },
+  },
+  {
+    id: "wagon",
+    kind: "Bootcamp",
+    name: "Le Wagon",
+    desc: "Bootcamp intensif de développement web full-stack",
+    duration: "9 semaines",
+    cost: "6 900€",
+    location: "Paris, Lyon, Bordeaux",
+    admission: "Entretien de motivation",
+    marketStat: {
+      label: "Développeurs web issus de cette école",
+      pct: 22,
+      trend: "Croissance",
+    },
+  },
+  {
+    id: "epitech",
+    kind: "École d'informatique",
+    name: "Epitech",
+    desc: "École d'expertise informatique et de technologie",
+    duration: "5 ans",
+    cost: "7 500€/an",
+    location: "Paris, Lyon, Bordeaux, Lille",
+    admission: "Sur dossier et entretien",
+    marketStat: {
+      label: "Développeurs web issus de cette école",
+      pct: 18,
+      trend: "Stable",
+    },
+  },
+  {
+    id: "saclay",
+    kind: "Université",
+    name: "Université Paris-Saclay",
+    desc: "Licence et Master en informatique",
+    duration: "3-5 ans",
+    cost: "250€/an",
+    location: "Orsay",
+    admission: "Parcoursup",
+    marketStat: {
+      label: "Développeurs web issus de cette école",
+      pct: 15,
+      trend: "Stable",
+    },
+  },
+  {
+    id: "openclassrooms",
+    kind: "Formation en ligne",
+    name: "OpenClassrooms",
+    desc: "Formation diplômante en développement web à distance",
+    duration: "12-18 mois",
+    cost: "300€/mois",
+    location: "En ligne",
+    admission: "Ouvert à tous",
+    marketStat: {
+      label: "Développeurs web issus de cette école",
+      pct: 17,
+      trend: "Croissance",
+    },
+  },
+];
+
+// Formations “data”
+const DATA_FORMATIONS = [
+  {
+    id: "m2ds",
+    kind: "Master",
+    name: "M2 Data Science (Université)",
+    desc: "Parcours scientifique en statistiques, ML, deep learning",
+    duration: "2 ans",
+    cost: "250€/an",
+    location: "France (Sorbonne, PSL, Paris-Saclay...)",
+    admission: "Dossier + Pré-requis",
+    marketStat: {
+      label: "Data scientists issus de cette filière",
+      pct: 24,
+      trend: "Stable",
+    },
+  },
+  {
+    id: "ensae",
+    kind: "Grande École",
+    name: "ENSAE / ENSAI",
+    desc: "Écoles spécialisées en stats/éco et data science",
+    duration: "3 ans",
+    cost: "~3 000€/an",
+    location: "Palaiseau / Rennes",
+    admission: "Concours / Dossier",
+    marketStat: {
+      label: "Data scientists issus de cette filière",
+      pct: 19,
+      trend: "Croissance",
+    },
+  },
+  {
+    id: "oc-ds",
+    kind: "Formation en ligne",
+    name: "OpenClassrooms - Data Scientist",
+    desc: "Parcours diplômant à distance axé projets",
+    duration: "12-18 mois",
+    cost: "300€/mois",
+    location: "En ligne",
+    admission: "Ouvert à tous",
+    marketStat: {
+      label: "Data scientists issus de cette filière",
+      pct: 14,
+      trend: "Croissance",
+    },
+  },
+];
+
+// Types d’entreprises “génériques”
+const TECH_COMPANY_TYPES = [
+  {
+    id: "startup",
+    icon: "🚀",
+    title: "Start-up Tech",
+    subtitle: "Environnement dynamique et innovant, culture agile",
+    examples: "Fintech, SaaS, E-commerce",
+    pros: ["Innovation constante", "Responsabilités rapides", "Stock-options"],
+    cons: ["Moins de stabilité", "Charge de travail élevée"],
+    companies: [
+      "Alan",
+      "Qonto",
+      "Doctolib",
+      "PayFit",
+      "Swile",
+      "Back Market",
+      "Contentsquare",
+      "Mirakl",
+    ],
+    market: { stagePct: 32, workPct: 22, trend: "Croissance" },
+  },
+  {
+    id: "grandgroupe",
+    icon: "🏢",
+    title: "Grand groupe / CAC40",
+    subtitle: "Entreprises établies avec process structurés",
+    examples: "Banques, Assurances, Retail",
+    pros: ["Stabilité", "Avantages sociaux", "Carrière structurée"],
+    cons: ["Hiérarchie importante", "Moins d'innovation"],
+    companies: [
+      "BNP Paribas",
+      "Société Générale",
+      "Crédit Agricole",
+      "AXA",
+      "Orange",
+      "Carrefour",
+      "SNCF",
+      "Décathlon",
+    ],
+    market: { stagePct: 18, workPct: 22, trend: "Stable" },
+  },
+  {
+    id: "freelance",
+    icon: "⚡",
+    title: "Freelance / Indépendant",
+    subtitle: "Autonomie complète et choix des projets",
+    examples: "Consultant, Développeur freelance",
+    pros: ["Liberté totale", "Revenus potentiels élevés", "Choix des clients"],
+    cons: ["Pas de sécurité", "Gestion administrative", "Isolement"],
+    companies: [
+      "Malt",
+      "Comet",
+      "Crème de la Crème",
+      "Kicklox",
+      "FreelanceRepublik",
+      "Upwork",
+      "Fiverr",
+      "Independant.io",
+    ],
+    market: { stagePct: 12, workPct: 15, trend: "Croissance" },
+  },
+  {
+    id: "agence",
+    icon: "🧩",
+    title: "Agence / ESN",
+    subtitle: "Projets variés chez plusieurs clients",
+    examples: "Conseil, Intégration, Agences digitales",
+    pros: ["Variété de missions", "Montée en compétences rapide", "Réseau"],
+    cons: ["Contexte client variable", "Mission-driven"],
+    companies: [
+      "Publicis Sapient",
+      "Wavestone",
+      "Valtech",
+      "OCTO Technology",
+      "Theodo",
+      "BAM",
+      "Ekino",
+      "Eleven Labs",
+    ],
+    market: { stagePct: 12, workPct: 15, trend: "Stable" },
+  },
+];
+
+// Types d’entreprises “data”
+const DATA_COMPANY_TYPES = [
+  {
+    id: "research",
+    icon: "🔬",
+    title: "R&D / Recherche",
+    subtitle: "Labs, équipes IA, publis",
+    examples: "Labs internes / publics",
+    pros: ["Excellence technique", "Impact scientifique"],
+    cons: ["Sélection élevée", "Cadence publications"],
+    companies: ["Inria", "Meta FAIR Paris", "DeepMind (EU)", "CNRS", "NavAlgo"],
+    market: { stagePct: 9, workPct: 12, trend: "Stable" },
+  },
+  {
+    id: "product-ai",
+    icon: "🧠",
+    title: "Produit IA",
+    subtitle: "Équipes produit avec features ML",
+    examples: "SaaS, plateformes",
+    pros: ["Impact utilisateur", "Data volumineuse"],
+    cons: ["Priorisation produit", "MLOps requis"],
+    companies: ["Doctolib", "Back Market", "Qonto", "Alan"],
+    market: { stagePct: 15, workPct: 19, trend: "Croissance" },
+  },
+];
+
+/* ---------------------- CATALOG : tous les métiers ---------------------- */
+
 const CATALOG = {
   fullstack: {
     id: "fullstack",
@@ -14,165 +255,78 @@ const CATALOG = {
         "12 500 offres d’emploi actives • Taux d’embauche +18% • Pénurie de talents confirmée",
       trend: "Croissance forte",
     },
-    formations: [
-      {
-        id: "ecole42",
-        kind: "École d'informatique",
-        name: "École 42",
-        desc: "Formation gratuite et innovante en développement web et software",
-        duration: "3 ans",
-        cost: "Gratuit",
-        location: "Paris, Lyon, Perpignan",
-        admission: "Sur dossier et tests",
-        marketStat: {
-          label: "Développeurs web issus de cette école",
-          pct: 28,
-          trend: "Croissance",
-        },
-      },
-      {
-        id: "wagon",
-        kind: "Bootcamp",
-        name: "Le Wagon",
-        desc: "Bootcamp intensif de développement web full-stack",
-        duration: "9 semaines",
-        cost: "6 900€",
-        location: "Paris, Lyon, Bordeaux",
-        admission: "Entretien de motivation",
-        marketStat: {
-          label: "Développeurs web issus de cette école",
-          pct: 22,
-          trend: "Croissance",
-        },
-      },
-      {
-        id: "epitech",
-        kind: "École d'informatique",
-        name: "Epitech",
-        desc: "École d'expertise informatique et de technologie",
-        duration: "5 ans",
-        cost: "7 500€/an",
-        location: "Paris, Lyon, Bordeaux, Lille",
-        admission: "Sur dossier et entretien",
-        marketStat: {
-          label: "Développeurs web issus de cette école",
-          pct: 18,
-          trend: "Stable",
-        },
-      },
-      {
-        id: "saclay",
-        kind: "Université",
-        name: "Université Paris-Saclay",
-        desc: "Licence et Master en informatique",
-        duration: "3-5 ans",
-        cost: "250€/an",
-        location: "Orsay",
-        admission: "Parcoursup",
-        marketStat: {
-          label: "Développeurs web issus de cette école",
-          pct: 15,
-          trend: "Stable",
-        },
-      },
-      {
-        id: "openclassrooms",
-        kind: "Formation en ligne",
-        name: "OpenClassrooms",
-        desc: "Formation diplômante en développement web à distance",
-        duration: "12-18 mois",
-        cost: "300€/mois",
-        location: "En ligne",
-        admission: "Ouvert à tous",
-        marketStat: {
-          label: "Développeurs web issus de cette école",
-          pct: 17,
-          trend: "Croissance",
-        },
-      },
-    ],
-    companyTypes: [
-      {
-        id: "startup",
-        icon: "🚀",
-        title: "Start-up Tech",
-        subtitle: "Environnement dynamique et innovant, culture agile",
-        examples: "Fintech, SaaS, E-commerce",
-        pros: ["Innovation constante", "Responsabilités rapides", "Stock-options"],
-        cons: ["Moins de stabilité", "Charge de travail élevée"],
-        companies: [
-          "Alan",
-          "Qonto",
-          "Doctolib",
-          "PayFit",
-          "Swile",
-          "Back Market",
-          "Contentsquare",
-          "Mirakl",
-        ],
-        market: { stagePct: 32, workPct: 22, trend: "Croissance" },
-      },
-      {
-        id: "grandgroupe",
-        icon: "🏢",
-        title: "Grand groupe / CAC40",
-        subtitle: "Entreprises établies avec process structurés",
-        examples: "Banques, Assurances, Retail",
-        pros: ["Stabilité", "Avantages sociaux", "Carrière structurée"],
-        cons: ["Hiérarchie importante", "Moins d'innovation"],
-        companies: [
-          "BNP Paribas",
-          "Société Générale",
-          "Crédit Agricole",
-          "AXA",
-          "Orange",
-          "Carrefour",
-          "SNCF",
-          "Décathlon",
-        ],
-        market: { stagePct: 18, workPct: 22, trend: "Stable" },
-      },
-      {
-        id: "freelance",
-        icon: "⚡",
-        title: "Freelance / Indépendant",
-        subtitle: "Autonomie complète et choix des projets",
-        examples: "Consultant, Développeur freelance",
-        pros: ["Liberté totale", "Revenus potentiels élevés", "Choix des clients"],
-        cons: ["Pas de sécurité", "Gestion administrative", "Isolement"],
-        companies: [
-          "Malt",
-          "Comet",
-          "Crème de la Crème",
-          "Kicklox",
-          "FreelanceRepublik",
-          "Upwork",
-          "Fiverr",
-          "Independant.io",
-        ],
-        market: { stagePct: 12, workPct: 15, trend: "Croissance" },
-      },
-      {
-        id: "agence",
-        icon: "🧩",
-        title: "Agence / ESN",
-        subtitle: "Projets variés chez plusieurs clients",
-        examples: "Conseil, Intégration, Agences digitales",
-        pros: ["Variété de missions", "Montée en compétences rapide", "Réseau"],
-        cons: ["Contexte client variable", "Mission-driven"],
-        companies: [
-          "Publicis Sapient",
-          "Wavestone",
-          "Valtech",
-          "OCTO Technology",
-          "Theodo",
-          "BAM",
-          "Ekino",
-          "Eleven Labs",
-        ],
-        market: { stagePct: 12, workPct: 15, trend: "Stable" },
-      },
-    ],
+    formations: TECH_FORMATIONS,
+    companyTypes: TECH_COMPANY_TYPES,
+  },
+
+  uxui: {
+    id: "uxui",
+    title: "Designer UX/UI",
+    badge: "Ton parcours personnalisé",
+    market: {
+      demand: "Forte demande sur les profils UX/UI",
+      hires:
+        "8 000 offres d’emploi actives • +15% d’embauches • importance de l’expérience utilisateur",
+      trend: "Croissance forte",
+    },
+    formations: TECH_FORMATIONS,
+    companyTypes: TECH_COMPANY_TYPES,
+  },
+
+  cpd: {
+    id: "cpd",
+    title: "Chef de Projet Digital",
+    badge: "Ton parcours personnalisé",
+    market: {
+      demand: "Besoin croissant de coordination de projets digitaux",
+      hires:
+        "5 000 offres d’emploi actives • +10% d’embauches • profils hybrides très recherchés",
+      trend: "Croissance modérée",
+    },
+    formations: TECH_FORMATIONS,
+    companyTypes: TECH_COMPANY_TYPES,
+  },
+
+  pm: {
+    id: "pm",
+    title: "Product Manager",
+    badge: "Ton parcours personnalisé",
+    market: {
+      demand: "Rôle clé dans les équipes produit modernes",
+      hires:
+        "4 500 offres d’emploi actives • +14% d’embauches • forte responsabilité business",
+      trend: "Croissance forte",
+    },
+    formations: TECH_FORMATIONS,
+    companyTypes: TECH_COMPANY_TYPES,
+  },
+
+  cloudarch: {
+    id: "cloudarch",
+    title: "Architecte Cloud",
+    badge: "Ton parcours personnalisé",
+    market: {
+      demand: "Forte demande sur les architectures cloud",
+      hires:
+        "3 200 offres d’emploi actives • +16% d’embauches • expertise très recherchée",
+      trend: "Croissance forte",
+    },
+    formations: TECH_FORMATIONS,
+    companyTypes: TECH_COMPANY_TYPES,
+  },
+
+  devops: {
+    id: "devops",
+    title: "DevOps Engineer",
+    badge: "Ton parcours personnalisé",
+    market: {
+      demand: "Besoin constant d’automatisation et de fiabilité",
+      hires:
+        "6 000 offres d’emploi actives • +18% d’embauches • rôle clé dans les équipes techniques",
+      trend: "Croissance forte",
+    },
+    formations: TECH_FORMATIONS,
+    companyTypes: TECH_COMPANY_TYPES,
   },
 
   datasci: {
@@ -184,69 +338,27 @@ const CATALOG = {
       hires: "6 000 offres • +12% d’embauches • forte compétition",
       trend: "Croissance modérée",
     },
-    formations: [
-      {
-        id: "m2ds",
-        kind: "Master",
-        name: "M2 Data Science (Université)",
-        desc: "Parcours scientifique en statistiques, ML, deep learning",
-        duration: "2 ans",
-        cost: "250€/an",
-        location: "France (Sorbonne, PSL, Paris-Saclay...)",
-        admission: "Dossier + Pré-requis",
-        marketStat: { label: "Data scientists issus de cette filière", pct: 24, trend: "Stable" },
-      },
-      {
-        id: "ensae",
-        kind: "Grande École",
-        name: "ENSAE / ENSAI",
-        desc: "Écoles spécialisées en stats/éco et data science",
-        duration: "3 ans",
-        cost: "~3 000€/an",
-        location: "Palaiseau / Rennes",
-        admission: "Concours / Dossier",
-        marketStat: { label: "Data scientists issus de cette filière", pct: 19, trend: "Croissance" },
-      },
-      {
-        id: "oc-ds",
-        kind: "Formation en ligne",
-        name: "OpenClassrooms - Data Scientist",
-        desc: "Parcours diplômant à distance axé projets",
-        duration: "12-18 mois",
-        cost: "300€/mois",
-        location: "En ligne",
-        admission: "Ouvert à tous",
-        marketStat: { label: "Data scientists issus de cette filière", pct: 14, trend: "Croissance" },
-      },
-    ],
-    companyTypes: [
-      {
-        id: "research",
-        icon: "🔬",
-        title: "R&D / Recherche",
-        subtitle: "Labs, équipes IA, publis",
-        examples: "Labs internes / publics",
-        pros: ["Excellence technique", "Impact scientifique"],
-        cons: ["Sélection élevée", "Cadence publications"],
-        companies: ["Inria", "Meta FAIR Paris", "DeepMind (EU)", "CNRS", "NavAlgo"],
-        market: { stagePct: 9, workPct: 12, trend: "Stable" },
-      },
-      {
-        id: "product-ai",
-        icon: "🧠",
-        title: "Produit IA",
-        subtitle: "Équipes produit avec features ML",
-        examples: "SaaS, plateformes",
-        pros: ["Impact utilisateur", "Data volumineuse"],
-        cons: ["Priorisation produit", "MLOps requis"],
-        companies: ["Doctolib", "Back Market", "Qonto", "Alan"],
-        market: { stagePct: 15, workPct: 19, trend: "Croissance" },
-      },
-    ],
+    formations: DATA_FORMATIONS,
+    companyTypes: DATA_COMPANY_TYPES,
+  },
+
+  dataeng: {
+    id: "dataeng",
+    title: "Data Engineer",
+    badge: "Ton parcours personnalisé",
+    market: {
+      demand: "Besoin massif d’infrastructures data",
+      hires:
+        "4 000 offres • +15% d’embauches • rôle central dans les plateformes data",
+      trend: "Croissance forte",
+    },
+    formations: DATA_FORMATIONS,
+    companyTypes: DATA_COMPANY_TYPES,
   },
 };
 
 /* ------------------------- Helpers visuels ------------------------- */
+
 function Badge({ children, tone = "gray" }) {
   const tones = {
     gray: "bg-gray-100 text-gray-800",
@@ -254,8 +366,13 @@ function Badge({ children, tone = "gray" }) {
     orange: "bg-orange-100 text-orange-800",
     blue: "bg-blue-100 text-blue-800",
   };
-  return <span className={`rounded-full px-2 py-0.5 text-xs ${tones[tone]}`}>{children}</span>;
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs ${tones[tone]}`}>
+      {children}
+    </span>
+  );
 }
+
 function StatBar({ pct, color = "bg-blue-600" }) {
   return (
     <div className="mt-2 h-2 w-full rounded-full bg-gray-200 overflow-hidden">
@@ -263,13 +380,21 @@ function StatBar({ pct, color = "bg-blue-600" }) {
     </div>
   );
 }
+
 const Check = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5">
-    <path d="M20 7l-9 9-5-5" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+    <path
+      d="M20 7l-9 9-5-5"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      fill="none"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
 /* ------------------------- Page principale ------------------------- */
+
 export default function CareerPath() {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -297,6 +422,8 @@ export default function CareerPath() {
     );
   }
 
+  const [toast, setToast] = useState("");
+
   function addStep(companyTypeId, step) {
     setSteps((prev) => [...prev, { companyTypeId, step }]);
     setToast("Étape ajoutée à ton parcours");
@@ -310,7 +437,6 @@ export default function CareerPath() {
     setToast("Parcours enregistré ! Retrouve-le dans ton profil à tout moment");
   }
 
-  const [toast, setToast] = useState("");
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(""), 2400);
@@ -322,7 +448,10 @@ export default function CareerPath() {
       <div className="max-w-3xl mx-auto">
         <div className="rounded-2xl border bg-white p-6">
           <div className="font-semibold">Métier introuvable</div>
-          <button onClick={() => navigate(-1)} className="mt-3 rounded-lg border px-3 py-1.5 hover:bg-gray-50">
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-3 rounded-lg border px-3 py-1.5 hover:bg-gray-50"
+          >
             ← Retour
           </button>
         </div>
@@ -339,11 +468,21 @@ export default function CareerPath() {
     senior: "3-5 ans",
   };
 
-  const firstValidatedFormation = validatedFormationIds.length
-    ? job.formations.find((f) => f.id === validatedFormationIds[0])
-    : null;
+  // première formation validée
+  const firstValidatedFormation =
+    validatedFormationIds.length > 0
+      ? job.formations.find((f) => f.id === validatedFormationIds[0])
+      : null;
 
-  const hasFreelanceStage = steps.some((s) => s.companyTypeId === "freelance" && s.step === "stage");
+  // états dérivés pour les steps
+  const hasStageOrAlt = steps.some(
+    (s) => s.step === "stage" || s.step === "alt"
+  );
+  const hasFreelanceStage = steps.some(
+    (s) => s.companyTypeId === "freelance" && s.step === "stage"
+  );
+  const hasJunior = steps.some((s) => s.step === "junior");
+  const hasInter = steps.some((s) => s.step === "inter");
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -359,7 +498,10 @@ export default function CareerPath() {
         >
           <span className="inline-block h-5 w-5 rounded-md bg-white/25 grid place-items-center">
             <svg viewBox="0 0 24 24" className="h-4 w-4">
-              <path d="M17 3H7a2 2 0 0 0-2 2v14l7-3 7 3V5a2 2 0 0 0-2-2Z" fill="currentColor" />
+              <path
+                d="M17 3H7a2 2 0 0 0-2 2v14l7-3 7 3V5a2 2 0 0 0-2-2Z"
+                fill="currentColor"
+              />
             </svg>
           </span>
           Enregistrer
@@ -375,116 +517,136 @@ export default function CareerPath() {
           Filtres
         </button>
         <button className="rounded-xl border bg-white px-3 py-1.5">Toutes</button>
-        <button className="rounded-xl border bg-white px-3 py-1.5">Tous les prix</button>
+        <button className="rounded-xl border bg-white px-3 py-1.5">
+          Tous les prix
+        </button>
       </div>
 
       {/* Stats métier */}
       <section className="mt-6 rounded-2xl border bg-gradient-to-r from-indigo-50 to-orange-50 p-5">
-        <div className="text-gray-900 font-semibold">Statistiques du métier de {job.title}</div>
+        <div className="text-gray-900 font-semibold">
+          Statistiques du métier de {job.title}
+        </div>
         <p className="mt-2 text-sm text-gray-700">{job.market.hires}</p>
         <div className="mt-4 rounded-xl bg-orange-100/60 text-orange-900 p-4 flex items-center justify-between">
           <div className="font-medium">{job.market.demand}</div>
-          <span className="rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs">✔ {job.market.trend}</span>
+          <span className="rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs">
+            ✔ {job.market.trend}
+          </span>
         </div>
       </section>
 
       {/* Timeline */}
-       <section className="mt-10">
-  <h2 className="text-xl font-semibold text-gray-900 mb-6">
-    Parcours classique vers ce métier
-  </h2>
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          Parcours classique vers ce métier
+        </h2>
 
-  {/* timeline container */}
-  <ul className="relative pl-28 space-y-12">
-
-    {/* Ligne verticale */}
-    <span
-      aria-hidden
-      className="pointer-events-none absolute left-9 top-0 bottom-0 w-[3px]
+        <ul className="relative pl-28 space-y-12">
+          {/* Ligne verticale */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-9 top-0 bottom-0 w-[3px]
                  bg-gradient-to-b from-orange-400 via-blue-400 to-orange-400"
-    />
+          />
 
-    {[
-      {
-        title: "Formation initiale",
-        subtitle: "Acquérir les bases techniques et théoriques du métier",
-        right: "2–5 ans",
-        dot: "orange",
-      },
-      {
-        title: "M2 Data Science (Université)",
-        subtitle: "Master · France (Sorbonne, PSL, Paris-Saclay…)",
-        right: "2 ans",
-        dot: "green",
-        badge: "Validé",
-      },
-      {
-        title: "Premier stage / Alternance",
-        subtitle: "Première expérience professionnelle en entreprise",
-        right: "6–12 mois",
-        dot: "blue",
-      },
-      {
-        title: "Stage en Freelance / Indépendant",
-        subtitle: "Autonomie complète et choix des projets",
-        right: "3–6 mois",
-        dot: "orange",
-      },
-      {
-        title: "Premier emploi (Junior)",
-        subtitle: "Développer ses compétences sur des projets réels",
-        right: "1–2 ans",
-        dot: "blue",
-      },
-      {
-        title: "Montée en compétences",
-        subtitle: "Devenir autonome et expert dans son domaine",
-        right: "2–3 ans",
-        dot: "orange",
-      },
-      {
-        title: "Développeur Full-Stack Senior",
-        subtitle: "Leadership technique et mentorat",
-        right: "3–5 ans",
-        dot: "blue",
-      },
-    ].map((step, idx) => (
-      <li key={idx} className="relative pl-16 md:pl-20">
+          {[
+            {
+              key: "formationInit",
+              title: "Formation initiale",
+              subtitle: "Acquérir les bases techniques et théoriques du métier",
+              right: DURATIONS.formationInit,
+              dot: "orange",
+              badge: null,
+            },
+            {
+              key: "formationChoisie",
+              title:
+                firstValidatedFormation?.name || "M2 Data Science (Université)",
+              subtitle:
+                firstValidatedFormation
+                  ? `${firstValidatedFormation.kind} · ${firstValidatedFormation.location}`
+                  : "Master · France (Sorbonne, PSL, Paris-Saclay…)",
+              right: firstValidatedFormation?.duration || "2 ans",
+              dot: "green",
+              badge: firstValidatedFormation ? "Validé" : null,
+            },
+            {
+              key: "stageAlt",
+              title: "Premier stage / Alternance",
+              subtitle: "Première expérience professionnelle en entreprise",
+              right: DURATIONS.stageAlt,
+              dot: "blue",
+              badge: hasStageOrAlt ? "Validé" : null,
+            },
+            {
+              key: "freelance",
+              title: "Stage en Freelance / Indépendant",
+              subtitle: "Autonomie complète et choix des projets",
+              right: DURATIONS.stageFreelance,
+              dot: "orange",
+              badge: hasFreelanceStage ? "Validé" : null,
+            },
+            {
+              key: "junior",
+              title: "Premier emploi (Junior)",
+              subtitle: "Développer ses compétences sur des projets réels",
+              right: DURATIONS.junior,
+              dot: "blue",
+              badge: hasJunior ? "Validé" : null,
+            },
+            {
+              key: "montee",
+              title: "Montée en compétences",
+              subtitle: "Devenir autonome et expert dans son domaine",
+              right: DURATIONS.montee,
+              dot: "orange",
+              badge: hasInter ? "Validé" : null,
+            },
+            {
+              key: "senior",
+              title: `${job.title} Senior`,
+              subtitle: "Leadership technique et mentorat",
+              right: DURATIONS.senior,
+              dot: "blue",
+              badge: null,
+            },
+          ].map((step) => (
+            <li key={step.key} className="relative pl-16 md:pl-20">
+              {/* pastille */}
+              <span
+                aria-hidden
+                className={[
+                  "absolute left-6 top-[2px] h-6 w-6 rounded-full bg-white border-[5px]",
+                  step.dot === "orange" && "border-orange-300",
+                  step.dot === "blue" && "border-blue-300",
+                  step.dot === "green" && "border-green-500 bg-green-500",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              />
 
-        {/* pastille */}
-        <span
-          aria-hidden
-          className={[
-            "absolute left-6 top-[2px] h-6 w-6 rounded-full bg-white border-[5px]",
-            step.dot === "orange" && "border-orange-300",
-            step.dot === "blue" && "border-blue-300",
-            step.dot === "green" && "border-green-500 bg-green-500",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        />
+              {/* contenu */}
+              <div className="flex items-start justify-between gap-8 ml-0">
+                <div className="flex-1">
+                  <div className="font-semibold text-lg">{step.title}</div>
+                  <div className="text-gray-600 text-sm">{step.subtitle}</div>
 
-        {/* contenu */}
-        <div className="flex items-start justify-between gap-8 ml-0">
-          <div className="flex-1">
-            <div className="font-semibold text-lg">{step.title}</div>
-            <div className="text-gray-600 text-sm">{step.subtitle}</div>
+                  {step.badge && (
+                    <span className="mt-1 inline-block rounded-full bg-green-100 text-green-700 text-xs px-2 py-0.5">
+                      {step.badge}
+                    </span>
+                  )}
+                </div>
 
-            {step.badge && (
-              <span className="mt-1 inline-block rounded-full bg-green-100 text-green-700 text-xs px-2 py-0.5">
-                {step.badge}
-              </span>
-            )}
-          </div>
-
-          <span className="shrink-0 rounded-full bg-gray-100 text-gray-700 text-xs px-3 py-1">
-            {step.right}
-          </span>
-        </div>
-      </li>
-    ))}
-  </ul>
-</section>
+                <span className="shrink-0 rounded-full bg-gray-100 text-gray-700 text-xs px-3 py-1">
+                  {step.right}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {/* Formations */}
       <section className="mt-8">
@@ -537,12 +699,16 @@ export default function CareerPath() {
 
                   <div className="mt-6 rounded-xl bg-indigo-50 p-4">
                     <div className="flex items-center justify-between">
-                      <div className="font-medium text-indigo-900">Statistiques du marché</div>
+                      <div className="font-medium text-indigo-900">
+                        Statistiques du marché
+                      </div>
                       <span className="rounded-full bg-white/60 px-2 py-0.5 text-xs">
                         {f.marketStat.trend}
                       </span>
                     </div>
-                    <div className="mt-2 text-sm text-indigo-900/90">{f.marketStat.label}</div>
+                    <div className="mt-2 text-sm text-indigo-900/90">
+                      {f.marketStat.label}
+                    </div>
                     <StatBar pct={f.marketStat.pct} />
                     <div className="text-right text-xs text-indigo-900/70 mt-1">
                       {f.marketStat.pct}%
@@ -576,8 +742,8 @@ export default function CareerPath() {
       <section className="mt-10">
         <div className="text-gray-900 font-semibold">Types d'entreprises</div>
         <p className="text-sm text-gray-600">
-          Ajoute-les à une étape : <b>Stage</b>, <b>Alternance</b>, <b>Junior</b> ou{" "}
-          <b>Intermédiaire</b>.
+          Ajoute-les à une étape : <b>Stage</b>, <b>Alternance</b>,{" "}
+          <b>Junior</b> ou <b>Intermédiaire</b>.
         </p>
 
         <div className="mt-5 space-y-8">
@@ -589,7 +755,9 @@ export default function CareerPath() {
                   <div>
                     <div className="font-semibold">{t.title}</div>
                     <div className="text-gray-600">{t.subtitle}</div>
-                    <div className="text-xs text-gray-500">Exemples : {t.examples}</div>
+                    <div className="text-xs text-gray-500">
+                      Exemples : {t.examples}
+                    </div>
                   </div>
                 </div>
 
@@ -603,7 +771,9 @@ export default function CareerPath() {
                     </ul>
                   </div>
                   <div className="rounded-xl bg-amber-50 p-4">
-                    <div className="font-medium text-amber-900">Points d'attention</div>
+                    <div className="font-medium text-amber-900">
+                      Points d'attention
+                    </div>
                     <ul className="mt-2 text-sm text-amber-800 list-disc ml-5">
                       {t.cons.map((c, i) => (
                         <li key={i}>{c}</li>
@@ -626,7 +796,9 @@ export default function CareerPath() {
                 </div>
 
                 <div className="mt-6 rounded-xl bg-orange-50 p-4">
-                  <div className="text-sm font-medium text-gray-900">Statistiques du marché</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    Statistiques du marché
+                  </div>
                   <div className="mt-3 text-sm text-gray-800">
                     Ont fait un stage dans ce type d'entreprise
                   </div>
@@ -685,46 +857,6 @@ export default function CareerPath() {
         </div>
       </section>
 
-      {(validatedFormationIds.length > 0 || steps.length > 0) && (
-        <section className="mt-8 rounded-2xl border bg-white p-5">
-          <div className="font-semibold text-gray-900">Aperçu de ton parcours</div>
-          <div className="mt-3 text-sm text-gray-800">
-            {validatedFormationIds.length > 0 && (
-              <div className="mb-2">
-                <div className="text-gray-600">Formations validées :</div>
-                <ul className="list-disc ml-5">
-                  {validatedFormationIds.map((id) => {
-                    const f = job.formations.find((x) => x.id === id);
-                    return <li key={id}>{f ? f.name : id}</li>;
-                  })}
-                </ul>
-              </div>
-            )}
-            {steps.length > 0 && (
-              <div>
-                <div className="text-gray-600">Étapes entreprises :</div>
-                <ul className="list-disc ml-5">
-                  {steps.map((s, i) => {
-                    const t = job.companyTypes.find((x) => x.id === s.companyTypeId);
-                    const labelMap = {
-                      stage: "Stage",
-                      alt: "Alternance",
-                      junior: "Junior",
-                      inter: "Intermédiaire",
-                    };
-                    return (
-                      <li key={`${s.companyTypeId}-${s.step}-${i}`}>
-                        {labelMap[s.step]} — {t ? t.title : s.companyTypeId}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
       {!!toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
           <div className="rounded-xl bg-emerald-900 text-white px-4 py-2 shadow-lg text-sm">
@@ -734,10 +866,16 @@ export default function CareerPath() {
       )}
 
       <div className="mt-8 flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="rounded-xl border bg-white px-4 py-2 hover:bg-gray-50">
+        <button
+          onClick={() => navigate(-1)}
+          className="rounded-xl border bg-white px-4 py-2 hover:bg-gray-50"
+        >
           ← Retour
         </button>
-        <button onClick={savePath} className="rounded-xl bg-orange-500 text-white px-4 py-2 hover:bg-orange-600">
+        <button
+          onClick={savePath}
+          className="rounded-xl bg-orange-500 text-white px-4 py-2 hover:bg-orange-600"
+        >
           Enregistrer
         </button>
       </div>

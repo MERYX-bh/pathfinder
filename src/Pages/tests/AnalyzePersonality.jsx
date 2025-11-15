@@ -34,9 +34,9 @@ export default function AnalyzePersonality() {
           ✓
         </div>
 
-        <h1 className="mt-6 text-2xl font-semibold">Test psychographique terminé&nbsp;!</h1>
+        <h1 className="mt-6 text-2xl font-semibold">Test terminé&nbsp;!</h1>
         <p className="mt-2 text-gray-600">
-          Nous analysons votre personnalité et déterminons votre type psychologique…
+          Nous analysons votre personnalité 
         </p>
 
         <div className="mt-8 inline-flex items-center gap-2 text-orange-700 bg-orange-50 rounded-full px-4 py-1.5 text-sm">

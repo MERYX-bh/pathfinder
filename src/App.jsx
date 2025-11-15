@@ -13,16 +13,15 @@ import Completion from "./Pages/tests/Completion.jsx";
 import ResultsPage from "./Pages/tests/Results.jsx";
 import RecommendedJobs from "./Pages/tests/RecommendedJobs.jsx";
 import Formations from "./Pages/tests/Formations.jsx";
-
+import GuidedTour from "./Pages/GuidedTour";
 import Login from "./Pages/Auth/Login.jsx";
 import PremiumSignup from "./Pages/Auth/PremiumSignup.jsx";
-
 import Checkout from "./Pages/payments/Checkout.jsx";
-
-// ✅ LE BON CHEMIN
 import CareerPath from "./Pages/tests/CareerPath.jsx";
-
+import Presentation from "./Pages/Presentation.jsx";
 import ProfilePage from "./Pages/Profile.jsx";
+import Signup from "./Pages/Auth/Signup";
+
 
 export default function App() {
   return (
@@ -39,10 +38,12 @@ export default function App() {
 
           <Route path="/metiers" element={<RecommendedJobs />} />
           <Route path="/formations" element={<Formations />} />
+          <Route path="/presentation" element={<Presentation />} />
 
           <Route path="/premium/inscription" element={<PremiumSignup />} />
+          <Route path="/auth/register" element={<Signup />} />
           <Route path="/paiement" element={<Checkout />} />
-
+          <Route path="/visite/parcours" element={<GuidedTour />} />
           {/* ✅ PAGE PARCOURS MÉTIER */}
           <Route path="/parcours/:jobId" element={<CareerPath />} />
 

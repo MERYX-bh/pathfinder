@@ -25,7 +25,11 @@ const CalendarIcon = () => (
 );
 const ArrowRight = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
-    <path d="M12 4l1.41 1.41L8.83 10H20v2H8.83l4.58 4.59L12 18l-8-8 8-8Z" transform="rotate(180 12 12)" fill="currentColor" />
+    <path
+      d="M12 4l1.41 1.41L8.83 10H20v2H8.83l4.58 4.59L12 18l-8-8 8-8Z"
+      transform="rotate(180 12 12)"
+      fill="currentColor"
+    />
   </svg>
 );
 const GiftIcon = () => (
@@ -148,19 +152,29 @@ export default function ProfilePage() {
     };
   }, [tests]);
 
-  // Déconnexion (démo)
+  // Déconnexion
   function handleLogout() {
     try {
+      // infos d'auth
       localStorage.removeItem("auth.userEmail");
       localStorage.removeItem("auth.userName");
+      localStorage.removeItem("auth.pendingEmail");
+      localStorage.removeItem("pf.premium");
+      // si plus tard tu ajoutes un token : localStorage.removeItem("auth.token");
     } catch {}
-    navigate("/");
+
+    // retour à la page de login
+    navigate("/auth/login");
   }
 
   // Helper pour formater une date courte FR
   function fmt(d) {
     try {
-      return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+      return new Date(d).toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
     } catch {
       return "";
     }
@@ -178,7 +192,10 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-xl bg-gray-100 grid place-items-center text-2xl text-gray-500">
                 <svg viewBox="0 0 24 24" className="h-9 w-9" aria-hidden>
-                  <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2-8 4.5V21h16v-2.5C20 16 16.33 14 12 14Z" fill="currentColor" />
+                  <path
+                    d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2-8 4.5V21h16v-2.5C20 16 16.33 14 12 14Z"
+                    fill="currentColor"
+                  />
                 </svg>
               </div>
               <div>
@@ -188,7 +205,8 @@ export default function ProfilePage() {
                   {user.premium && <PremiumBadge />}
                   {!!tests.length && (
                     <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs text-indigo-800">
-                      {tests.length} test{tests.length > 1 ? "s" : ""} complété{tests.length > 1 ? "s" : ""}
+                      {tests.length} test{tests.length > 1 ? "s" : ""} complété
+                      {tests.length > 1 ? "s" : ""}
                     </span>
                   )}
                 </div>
@@ -212,7 +230,9 @@ export default function ProfilePage() {
                 <CalendarIcon />
                 Test
               </div>
-              <div className="mt-1 text-2xl font-semibold">{metrics.testsCount}</div>
+              <div className="mt-1 text-2xl font-semibold">
+                {metrics.testsCount}
+              </div>
             </div>
 
             <div className="rounded-xl border bg-white p-4">
@@ -220,7 +240,9 @@ export default function ProfilePage() {
                 <GiftIcon />
                 Métiers
               </div>
-              <div className="mt-1 text-2xl font-semibold">{metrics.exploredJobs}</div>
+              <div className="mt-1 text-2xl font-semibold">
+                {metrics.exploredJobs}
+              </div>
             </div>
 
             <div className="rounded-xl border bg-white p-4">
@@ -228,7 +250,9 @@ export default function ProfilePage() {
                 <MatchIcon />
                 Match
               </div>
-              <div className="mt-1 text-2xl font-semibold">{metrics.match || 0}%</div>
+              <div className="mt-1 text-2xl font-semibold">
+                {metrics.match || 0}%
+              </div>
             </div>
           </div>
         </div>
@@ -247,19 +271,29 @@ export default function ProfilePage() {
           {tests.length === 0 ? (
             <div className="mt-4 text-sm text-gray-600">
               Tu n’as pas encore complété de test.
-              <Link to="/tests/complet" className="ml-2 text-orange-600 underline">Commencer le test</Link>
+              <Link
+                to="/tests/complet"
+                className="ml-2 text-orange-600 underline"
+              >
+                Commencer le test
+              </Link>
             </div>
           ) : (
             <div className="mt-4 space-y-3">
               {tests.map((t) => (
-                <div key={t.id} className="flex items-center justify-between rounded-xl border bg-white p-4">
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between rounded-xl border bg-white p-4"
+                >
                   <div className="flex items-start gap-3">
                     <div className="h-9 w-9 grid place-items-center rounded-lg bg-orange-50 text-orange-600">
                       <CalendarIcon />
                     </div>
                     <div>
                       <div className="font-medium">{t.name}</div>
-                      <div className="text-xs text-gray-500">{fmt(t.date)}</div>
+                      <div className="text-xs text-gray-500">
+                        {fmt(t.date)}
+                      </div>
                     </div>
                   </div>
 
@@ -270,7 +304,7 @@ export default function ProfilePage() {
                       </span>
                     )}
                     <Link
-                      to="/tests/resultats"
+                      to="/tests/complet/resultats"
                       className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50"
                     >
                       Voir
@@ -294,8 +328,14 @@ export default function ProfilePage() {
 
           {paths.length === 0 ? (
             <div className="mt-4 text-sm text-gray-600">
-              Aucun parcours sauvegardé. Va sur un métier (ex. <Link className="underline text-indigo-600" to="/parcours/fullstack">Full-Stack</Link>)
-              et clique sur <b>Enregistrer</b>.
+              Aucun parcours sauvegardé. Va sur un métier (ex.{" "}
+              <Link
+                className="underline text-indigo-600"
+                to="/parcours/fullstack"
+              >
+                Full-Stack
+              </Link>
+              ) et clique sur <b>Enregistrer</b>.
             </div>
           ) : (
             <div className="mt-4 space-y-4">
@@ -303,19 +343,32 @@ export default function ProfilePage() {
                 const cat = CATALOG[p.jobId];
                 const title = cat?.title || p.jobId;
                 const firstFormationId = p.validatedFormationIds?.[0];
-                const formation = cat?.formations?.find((f) => f.id === firstFormationId);
+                const formation = cat?.formations?.find(
+                  (f) => f.id === firstFormationId
+                );
                 const stepsCount = (p.steps || []).length;
 
                 const companiesLabel = (() => {
                   if (!stepsCount) return "Aucune entreprise sélectionnée";
-                  // Regrouper par type + step
                   const first = p.steps[0];
-                  const stepMap = { stage: "Stage", alt: "Alternance", junior: "Junior", inter: "Intermédiaire" };
-                  return `${stepsCount} entreprise${stepsCount > 1 ? "s" : ""} sélectionnée${stepsCount > 1 ? "s" : ""} • ${stepMap[first.step] || "Étape"}`;
+                  const stepMap = {
+                    stage: "Stage",
+                    alt: "Alternance",
+                    junior: "Junior",
+                    inter: "Intermédiaire",
+                  };
+                  return `${stepsCount} entreprise${
+                    stepsCount > 1 ? "s" : ""
+                  } sélectionnée${stepsCount > 1 ? "s" : ""} • ${
+                    stepMap[first.step] || "Étape"
+                  }`;
                 })();
 
                 return (
-                  <div key={`${p.jobId}-${idx}`} className="rounded-2xl border bg-gradient-to-r from-indigo-50 to-orange-50 p-5">
+                  <div
+                    key={`${p.jobId}-${idx}`}
+                    className="rounded-2xl border bg-gradient-to-r from-indigo-50 to-orange-50 p-5"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-lg font-semibold">{title}</div>
@@ -327,14 +380,18 @@ export default function ProfilePage() {
                               🎓
                             </span>
                             <div>
-                              <div className="font-medium">{formation.name}</div>
+                              <div className="font-medium">
+                                {formation.name}
+                              </div>
                               <div className="text-xs text-gray-600">
                                 {formation.kind} • {formation.duration}
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <div className="mt-2 text-sm text-gray-600">Aucune formation validée</div>
+                          <div className="mt-2 text-sm text-gray-600">
+                            Aucune formation validée
+                          </div>
                         )}
 
                         {/* Entreprises / étapes */}
@@ -342,7 +399,9 @@ export default function ProfilePage() {
                           <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
                             🏢
                           </span>
-                          <div className="text-sm text-gray-800">{companiesLabel}</div>
+                          <div className="text-sm text-gray-800">
+                            {companiesLabel}
+                          </div>
                         </div>
 
                         <div className="mt-3 text-xs text-gray-500">
@@ -374,7 +433,9 @@ export default function ProfilePage() {
               className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 hover:bg-gray-50"
             >
               <span className="inline-flex items-center gap-2">
-                <span className="h-6 w-6 grid place-items-center rounded-lg bg-orange-100 text-orange-700">🧭</span>
+                <span className="h-6 w-6 grid place-items-center rounded-lg bg-orange-100 text-orange-700">
+                  🧭
+                </span>
                 Nouveau test
               </span>
               <ArrowRight />
@@ -385,7 +446,9 @@ export default function ProfilePage() {
               className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 hover:bg-gray-50"
             >
               <span className="inline-flex items-center gap-2">
-                <span className="h-6 w-6 grid place-items-center rounded-lg bg-indigo-100 text-indigo-700">🎯</span>
+                <span className="h-6 w-6 grid place-items-center rounded-lg bg-indigo-100 text-indigo-700">
+                  🎯
+                </span>
                 Voir les métiers
               </span>
               <ArrowRight />
@@ -396,18 +459,22 @@ export default function ProfilePage() {
               className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 hover:bg-gray-50"
             >
               <span className="inline-flex items-center gap-2">
-                <span className="h-6 w-6 grid place-items-center rounded-lg bg-green-100 text-green-700">🤖</span>
+                <span className="h-6 w-6 grid place-items-center rounded-lg bg-green-100 text-green-700">
+                  🤖
+                </span>
                 Assistant IA
               </span>
               <ArrowRight />
             </Link>
 
             <Link
-              to="/tests/resultats"
+              to="/tests/complet/resultats?download=1"
               className="flex items-center justify-between rounded-xl border bg-white px-4 py-3 hover:bg-gray-50"
             >
               <span className="inline-flex items-center gap-2">
-                <span className="h-6 w-6 grid place-items-center rounded-lg bg-gray-100 text-gray-700">⬇️</span>
+                <span className="h-6 w-6 grid place-items-center rounded-lg bg-gray-100 text-gray-700">
+                  ⬇️
+                </span>
                 Mes résultats
               </span>
               <ArrowRight />
