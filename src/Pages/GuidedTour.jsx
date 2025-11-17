@@ -131,34 +131,8 @@ export default function GuidedTour() {
             </button>
           </div>
 
-          {/* Étape 4 : formations */}
-          <div className="rounded-2xl border border-orange-100 bg-white shadow-sm p-6 flex flex-col justify-between">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-full bg-orange-50 grid place-items-center text-orange-500">
-                  🎓
-                </div>
-                <div>
-                  <h2 className="font-semibold text-gray-900">
-                    Découvrir les formations
-                  </h2>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Explorez les parcours de formation adaptés à vos objectifs
-                  </p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-400">4</span>
-            </div>
-            <button
-              onClick={() => navigate("/formations")}
-              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
-            >
-              Cliquez pour commencer
-              <span aria-hidden>➜</span>
-            </button>
-          </div>
-
-          {/* Étape 5 : assistant IA */}
+         
+          {/* Étape 3 : assistant IA */}
           <div className="rounded-2xl border border-orange-100 bg-orange-50/60 shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -190,37 +164,6 @@ export default function GuidedTour() {
             </button>
           </div>
 
-          {/* Étape 6 : favoris → renvoie vers la home "/" */}
-          <div className="rounded-2xl border border-orange-100 bg-orange-50/60 shadow-sm p-6 flex flex-col justify-between">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-full bg-orange-500 grid place-items-center text-white">
-                  ❤️
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-gray-900">
-                      Organiser vos favoris
-                    </h2>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-600 text-white">
-                      Optionnel
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Sauvegardez et organisez les métiers qui vous intéressent
-                  </p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-400">6</span>
-            </div>
-            <button
-              onClick={() => navigate("/")} // comme tu as demandé
-              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
-            >
-              Cliquez pour commencer
-              <span aria-hidden>➜</span>
-            </button>
-          </div>
         </section>
 
         {/* Bloc conseils */}
