@@ -190,7 +190,7 @@ export default function GuidedTour() {
         {/* Bouton final */}
         <div className="mt-8 flex justify-center">
           <button
-            onClick={() => navigate("/tests/rapide/1")} // change le chemin si besoin
+            onClick={() => navigate("/tests/complet")} // change le chemin si besoin
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white border border-gray-200 shadow-sm text-sm font-medium hover:bg-gray-50 transition"
           >
             Commencer à explorer
