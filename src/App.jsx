@@ -21,6 +21,8 @@ import CareerPath from "./Pages/tests/CareerPath.jsx";
 import Presentation from "./Pages/Presentation.jsx";
 import ProfilePage from "./Pages/Profile.jsx";
 import Signup from "./Pages/Auth/Signup";
+import AssistantPage from "./Pages/PageAssistant.jsx";
+
 
 
 export default function App() {
@@ -35,11 +37,10 @@ export default function App() {
           <Route path="/tests/complet" element={<FullTest />} />
           <Route path="/tests/complet/analyse" element={<AnalyzePersonality />} />
           <Route path="/tests/complet/resultats" element={<ResultsPage />} />
-
           <Route path="/metiers" element={<RecommendedJobs />} />
           <Route path="/formations" element={<Formations />} />
           <Route path="/presentation" element={<Presentation />} />
-
+          <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/premium/inscription" element={<PremiumSignup />} />
           <Route path="/auth/register" element={<Signup />} />
           <Route path="/paiement" element={<Checkout />} />

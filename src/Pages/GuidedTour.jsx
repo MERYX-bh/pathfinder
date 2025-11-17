@@ -18,7 +18,10 @@ export default function GuidedTour() {
           </div>
         </div>
 
-        <button className="text-sm text-gray-500 hover:underline">
+        <button
+          className="text-sm text-gray-500 hover:underline"
+          onClick={() => navigate("/")}
+        >
           Terminer plus tard
         </button>
       </header>
@@ -34,16 +37,12 @@ export default function GuidedTour() {
             {/* Pour l'instant 0%, tu pourras l'animer plus tard */}
             <div className="h-full w-0 bg-orange-500 rounded-full" />
           </div>
-          <p className="mt-1 text-xs text-right text-gray-400">
-            0 / 6 étapes
-          </p>
+          <p className="mt-1 text-xs text-right text-gray-400">0 / 6 étapes</p>
         </section>
 
         {/* Titre + description */}
         <section className="mt-10 text-center">
-          <h1 className="text-xl font-semibold">
-            Votre parcours de découverte 🗺️
-          </h1>
+          <h1 className="text-xl font-semibold">Votre parcours de découverte 🗺️</h1>
           <p className="mt-3 text-sm text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Suivez ces étapes pour tirer le meilleur parti de PathFinder.
             Vous pouvez les faire dans l&apos;ordre qui vous convient !
@@ -52,7 +51,7 @@ export default function GuidedTour() {
 
         {/* GRID DES 6 CARTES */}
         <section className="mt-10 grid gap-6 md:grid-cols-2">
-          {/* Étape 1 */}
+          {/* Étape 1 : profil / inscription */}
           <div className="rounded-2xl border border-orange-100 bg-white shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -60,9 +59,7 @@ export default function GuidedTour() {
                   👤
                 </div>
                 <div>
-                  <h2 className="font-semibold text-gray-900">
-                    Créer votre profil
-                  </h2>
+                  <h2 className="font-semibold text-gray-900">Créer votre profil</h2>
                   <p className="mt-2 text-sm text-gray-600">
                     Renseignez vos informations personnelles et votre
                     niveau d&apos;études
@@ -71,13 +68,16 @@ export default function GuidedTour() {
               </div>
               <span className="text-sm text-gray-400">1</span>
             </div>
-            <button className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1">
+            <button
+              onClick={() => navigate("/auth/register")}
+              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
+            >
               Cliquez pour commencer
               <span aria-hidden>➜</span>
             </button>
           </div>
 
-          {/* Étape 2 */}
+          {/* Étape 2 : test d’orientation */}
           <div className="rounded-2xl border border-orange-100 bg-white shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -95,13 +95,16 @@ export default function GuidedTour() {
               </div>
               <span className="text-sm text-gray-400">2</span>
             </div>
-            <button className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1">
+            <button
+              onClick={() => navigate("/tests/rapide/1")} // début du test
+              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
+            >
               Cliquez pour commencer
               <span aria-hidden>➜</span>
             </button>
           </div>
 
-          {/* Étape 3 */}
+          {/* Étape 3 : explorer les métiers */}
           <div className="rounded-2xl border border-orange-100 bg-white shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -119,13 +122,16 @@ export default function GuidedTour() {
               </div>
               <span className="text-sm text-gray-400">3</span>
             </div>
-            <button className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1">
+            <button
+              onClick={() => navigate("/metiers")}
+              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
+            >
               Cliquez pour commencer
               <span aria-hidden>➜</span>
             </button>
           </div>
 
-          {/* Étape 4 */}
+          {/* Étape 4 : formations */}
           <div className="rounded-2xl border border-orange-100 bg-white shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -143,13 +149,16 @@ export default function GuidedTour() {
               </div>
               <span className="text-sm text-gray-400">4</span>
             </div>
-            <button className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1">
+            <button
+              onClick={() => navigate("/formations")}
+              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
+            >
               Cliquez pour commencer
               <span aria-hidden>➜</span>
             </button>
           </div>
 
-          {/* Étape 5 */}
+          {/* Étape 5 : assistant IA */}
           <div className="rounded-2xl border border-orange-100 bg-orange-50/60 shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -172,13 +181,16 @@ export default function GuidedTour() {
               </div>
               <span className="text-sm text-gray-400">5</span>
             </div>
-            <button className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1">
+            <button
+              onClick={() => navigate("/assistant")}
+              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
+            >
               Cliquez pour commencer
               <span aria-hidden>➜</span>
             </button>
           </div>
 
-          {/* Étape 6 */}
+          {/* Étape 6 : favoris → renvoie vers la home "/" */}
           <div className="rounded-2xl border border-orange-100 bg-orange-50/60 shadow-sm p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -201,7 +213,10 @@ export default function GuidedTour() {
               </div>
               <span className="text-sm text-gray-400">6</span>
             </div>
-            <button className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1">
+            <button
+              onClick={() => navigate("/")} // comme tu as demandé
+              className="mt-4 text-sm text-orange-500 font-medium inline-flex items-center gap-1"
+            >
               Cliquez pour commencer
               <span aria-hidden>➜</span>
             </button>
@@ -218,17 +233,12 @@ export default function GuidedTour() {
               </h3>
               <ul className="mt-3 space-y-2 text-sm text-blue-900/90">
                 <li>
-                  ⭐ Commencez par créer votre profil et passer un test d&apos;orientation
+                  ⭐ Commencez par créer votre profil et passer un test
+                  d&apos;orientation
                 </li>
-                <li>
-                  📘 Explorez plusieurs métiers pour élargir vos horizons
-                </li>
-                <li>
-                  💬 N&apos;hésitez pas à utiliser l&apos;assistant IA pour vos questions
-                </li>
-                <li>
-                  ❤️ Sauvegardez en favoris les métiers qui vous intéressent
-                </li>
+                <li>📘 Explorez plusieurs métiers pour élargir vos horizons</li>
+                <li>💬 N&apos;hésitez pas à utiliser l&apos;assistant IA pour vos questions</li>
+                <li>❤️ Sauvegardez en favoris les métiers qui vous intéressent</li>
               </ul>
             </div>
           </div>

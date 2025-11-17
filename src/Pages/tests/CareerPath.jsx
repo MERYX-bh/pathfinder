@@ -1,6 +1,7 @@
 // src/Pages/tests/CareerPath.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import jsPDF from "jspdf";
 
 /* ---------------------- Données de base réutilisables ---------------------- */
 
@@ -197,7 +198,7 @@ const TECH_COMPANY_TYPES = [
   {
     id: "agence",
     icon: "🧩",
-    title: "Agence / ESN",
+    title: "Agence digitale / ESN",
     subtitle: "Projets variés chez plusieurs clients",
     examples: "Conseil, Intégration, Agences digitales",
     pros: ["Variété de missions", "Montée en compétences rapide", "Réseau"],
@@ -393,6 +394,27 @@ const Check = () => (
   </svg>
 );
 
+/* ------------------- Helpers pour les filtres ------------------- */
+
+// Convertit une chaîne de coût en nombre annuel approximatif
+function parseCostToYearlyNumber(costStr) {
+  if (!costStr) return Infinity;
+  const lower = costStr.toLowerCase();
+
+  if (lower.includes("gratuit")) return 0;
+
+  const match = lower.match(/([\d\s]+)\s*€/);
+  if (!match) return Infinity;
+
+  const raw = match[1].replace(/\s/g, "");
+  const value = Number(raw || "0");
+
+  if (lower.includes("mois")) {
+    return value * 12; // coût mensuel → annuel
+  }
+  return value; // coût annuel ou unique
+}
+
 /* ------------------------- Page principale ------------------------- */
 
 export default function CareerPath() {
@@ -404,6 +426,13 @@ export default function CareerPath() {
   const storageKey = `pf.path.${jobId}`;
   const [validatedFormationIds, setValidatedFormationIds] = useState([]);
   const [steps, setSteps] = useState([]); // { companyTypeId, step }
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+
+  // Filtres
+  const [locationFilter, setLocationFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
+  const [showLocationMenu, setShowLocationMenu] = useState(false);
+  const [showPriceMenu, setShowPriceMenu] = useState(false);
 
   useEffect(() => {
     if (!job) return;
@@ -412,6 +441,7 @@ export default function CareerPath() {
       if (saved) {
         setValidatedFormationIds(saved.validatedFormationIds || []);
         setSteps(saved.steps || []);
+        if (saved.savedAt) setLastSavedAt(saved.savedAt);
       }
     } catch {}
   }, [job, storageKey]);
@@ -430,9 +460,11 @@ export default function CareerPath() {
   }
 
   function savePath() {
-    const payload = { validatedFormationIds, steps, savedAt: Date.now(), jobId };
+    const now = Date.now();
+    const payload = { validatedFormationIds, steps, savedAt: now, jobId };
     try {
       localStorage.setItem(storageKey, JSON.stringify(payload));
+      setLastSavedAt(now);
     } catch {}
     setToast("Parcours enregistré ! Retrouve-le dans ton profil à tout moment");
   }
@@ -474,7 +506,7 @@ export default function CareerPath() {
       ? job.formations.find((f) => f.id === validatedFormationIds[0])
       : null;
 
-  // états dérivés pour les steps
+  // états dérivés pour les steps (pour les badges "Validé")
   const hasStageOrAlt = steps.some(
     (s) => s.step === "stage" || s.step === "alt"
   );
@@ -483,6 +515,400 @@ export default function CareerPath() {
   );
   const hasJunior = steps.some((s) => s.step === "junior");
   const hasInter = steps.some((s) => s.step === "inter");
+
+  // index rapide par id pour les types d'entreprises
+  const companyTypeById = useMemo(() => {
+    const map = {};
+    job.companyTypes.forEach((t) => {
+      map[t.id] = t;
+    });
+    return map;
+  }, [job.companyTypes]);
+
+  /* ------------ étapes du parcours (réutilisées dans le PDF) ------------ */
+
+  const stageCompanySteps = steps
+    .filter((s) => s.step === "stage")
+    .map((s, idx) => {
+      const t = companyTypeById[s.companyTypeId];
+      if (!t) return null;
+      return {
+        key: `stage-company-${idx}-${t.id}`,
+        title: `Stage en ${t.title}`,
+        subtitle: t.subtitle,
+        right: DURATIONS.stageFreelance, // 3-6 mois
+        dot: "orange",
+        badge: "Sélectionné",
+        badgeTone: "orange",
+      };
+    })
+    .filter(Boolean);
+
+  const altCompanySteps = steps
+    .filter((s) => s.step === "alt")
+    .map((s, idx) => {
+      const t = companyTypeById[s.companyTypeId];
+      if (!t) return null;
+      return {
+        key: `alt-company-${idx}-${t.id}`,
+        title: `Alternance en ${t.title}`,
+        subtitle: t.subtitle,
+        right: DURATIONS.stageAlt, // 6-12 mois
+        dot: "orange",
+        badge: "Sélectionné",
+        badgeTone: "orange",
+      };
+    })
+    .filter(Boolean);
+
+  const juniorCompanySteps = steps
+    .filter((s) => s.step === "junior")
+    .map((s, idx) => {
+      const t = companyTypeById[s.companyTypeId];
+      if (!t) return null;
+      return {
+        key: `junior-company-${idx}-${t.id}`,
+        title: `Premier emploi (Junior) - ${t.title}`,
+        subtitle: t.subtitle,
+        right: DURATIONS.junior,
+        dot: "blue",
+        badge: "Sélectionné",
+        badgeTone: "orange",
+      };
+    })
+    .filter(Boolean);
+
+  const interCompanySteps = steps
+    .filter((s) => s.step === "inter")
+    .map((s, idx) => {
+      const t = companyTypeById[s.companyTypeId];
+      if (!t) return null;
+      return {
+        key: `inter-company-${idx}-${t.id}`,
+        title: `Poste intermédiaire - ${t.title}`,
+        subtitle: t.subtitle,
+        right: DURATIONS.montee,
+        dot: "orange",
+        badge: "Sélectionné",
+        badgeTone: "orange",
+      };
+    })
+    .filter(Boolean);
+
+  const timelineSteps = [
+    // 1. Formation initiale
+    {
+      key: "formationInit",
+      title: "Formation initiale",
+      subtitle: "Acquérir les bases techniques et théoriques du métier",
+      right: DURATIONS.formationInit,
+      dot: "orange",
+      badge: null,
+    },
+
+    // 2. Formation choisie (Epitech, 42, etc.)
+    {
+      key: "formationChoisie",
+      title: firstValidatedFormation?.name || "M2 Data Science (Université)",
+      subtitle: firstValidatedFormation
+        ? `${firstValidatedFormation.kind} · ${firstValidatedFormation.location}`
+        : "Master · France (Sorbonne, PSL, Paris-Saclay…)",
+      right: firstValidatedFormation?.duration || "2 ans",
+      dot: "green",
+      badge: firstValidatedFormation ? "Validé" : null,
+      badgeTone: "green",
+    },
+
+    // 3. Premier stage / alternance (générique)
+    {
+      key: "stageAlt",
+      title: "Premier stage / Alternance",
+      subtitle: "Première expérience professionnelle en entreprise",
+      right: DURATIONS.stageAlt,
+      dot: "blue",
+      badge: hasStageOrAlt ? "Validé" : null,
+      badgeTone: "green",
+    },
+
+    // 4. Stages & alternances sélectionnés
+    ...stageCompanySteps,
+    ...altCompanySteps,
+
+    // 5. Stage freelance spécifique
+    {
+      key: "freelance",
+      title: "Stage en Freelance / Indépendant",
+      subtitle: "Autonomie complète et choix des projets",
+      right: DURATIONS.stageFreelance,
+      dot: "orange",
+      badge: hasFreelanceStage ? "Validé" : null,
+      badgeTone: "green",
+    },
+
+    // 6. Premier emploi (Junior) générique
+    {
+      key: "junior",
+      title: "Premier emploi (Junior)",
+      subtitle: "Développer ses compétences sur des projets réels",
+      right: DURATIONS.junior,
+      dot: "blue",
+      badge: hasJunior ? "Validé" : null,
+      badgeTone: "green",
+    },
+
+    // 7. Postes junior sélectionnés
+    ...juniorCompanySteps,
+
+    // 8. Montée en compétences générique
+    {
+      key: "montee",
+      title: "Montée en compétences",
+      subtitle: "Devenir autonome et expert dans son domaine",
+      right: DURATIONS.montee,
+      dot: "orange",
+      badge: hasInter ? "Validé" : null,
+      badgeTone: "green",
+    },
+
+    // 9. Postes intermédiaires sélectionnés
+    ...interCompanySteps,
+
+    // 10. Senior
+    {
+      key: "senior",
+      title: `${job.title} Senior`,
+      subtitle: "Leadership technique et mentorat",
+      right: DURATIONS.senior,
+      dot: "blue",
+      badge: null,
+    },
+  ];
+
+  /* ------------ application des filtres formations ------------ */
+
+  const filteredFormations = useMemo(() => {
+    return job.formations.filter((f) => {
+      // filtre localisation
+      if (locationFilter !== "all") {
+        const loc = (f.location || "").toLowerCase();
+        if (!loc.includes(locationFilter.toLowerCase())) return false;
+      }
+
+      // filtre prix
+      const yearly = parseCostToYearlyNumber(f.cost);
+
+      if (priceFilter === "lt5k" && !(yearly < 5000)) return false;
+      if (priceFilter === "5k-10k" && !(yearly >= 5000 && yearly <= 10000))
+        return false;
+      if (priceFilter === "gt10k" && !(yearly > 10000)) return false;
+
+      return true;
+    });
+  }, [job.formations, locationFilter, priceFilter]);
+
+  const locationLabel = (() => {
+    switch (locationFilter) {
+      case "paris":
+        return "Paris";
+      case "lyon":
+        return "Lyon";
+      case "bordeaux":
+        return "Bordeaux";
+      case "marseille":
+        return "Marseille";
+      default:
+        return "Toutes";
+    }
+  })();
+
+  const priceLabel = (() => {
+    switch (priceFilter) {
+      case "lt5k":
+        return "Moins de 5 000€";
+      case "5k-10k":
+        return "5 000€ - 10 000€";
+      case "gt10k":
+        return "Plus de 10 000€";
+      default:
+        return "Tous les prix";
+    }
+  })();
+
+  function formatTime(ts) {
+    if (!ts) return "";
+    return new Date(ts).toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  /* ---------------------- Génération du PDF ---------------------- */
+
+  function exportPdf() {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const marginX = 40;
+
+    // Bandeau orange
+    doc.setFillColor(255, 122, 89);
+    doc.rect(0, 0, pageWidth, 80, "F");
+
+    // Titre PathFinder
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.setTextColor(255, 255, 255);
+    doc.text("PathFinder", marginX, 40);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text("Ton orientation professionnelle personnalisée", marginX, 60);
+
+    // Badge rapport
+    const badgeWidth = 160;
+    doc.setFillColor(255, 185, 145);
+    doc.roundedRect(
+      pageWidth - badgeWidth - marginX,
+      25,
+      badgeWidth,
+      30,
+      4,
+      4,
+      "F"
+    );
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text("RAPPORT PARCOURS", pageWidth - badgeWidth - marginX + 18, 45);
+
+    // Date
+    let y = 110;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.setFontSize(9);
+    const dateStr = new Date().toLocaleDateString("fr-FR");
+    doc.text(`Généré le ${dateStr}`, marginX, y);
+    y += 25;
+
+    // Ligne
+    doc.setDrawColor(220, 220, 220);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 25;
+
+    // Titre parcours classique
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(40, 72, 180);
+    doc.setFontSize(14);
+    doc.text("Parcours classique vers ce métier", marginX, y);
+    y += 18;
+
+    doc.setFontSize(12);
+    doc.setTextColor(50, 50, 50);
+    doc.text(job.title, marginX, y);
+    y += 22;
+
+    // Étapes
+    timelineSteps.forEach((step, idx) => {
+      if (y > 720) {
+        doc.addPage();
+        y = 80;
+      }
+
+      // Pastille
+      doc.setFillColor(255, 122, 89);
+      doc.circle(marginX + 4, y - 4, 3, "F");
+
+      // Titre étape
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(30, 30, 30);
+      doc.text(`${idx + 1}. ${step.title}`, marginX + 15, y);
+
+      // Durée à droite
+      doc.setFontSize(9);
+      doc.setTextColor(255, 122, 89);
+      const txt = step.right || "";
+      const txtW = doc.getTextWidth(txt);
+      doc.text(txt, pageWidth - marginX - txtW, y);
+
+      // Sous-titre
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(90, 90, 90);
+      doc.setFontSize(9);
+      doc.text(step.subtitle, marginX + 15, y + 12);
+
+      y += 32;
+    });
+
+    // Nouvelle page : formations populaires
+    doc.addPage();
+    let y2 = 80;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(41, 82, 204);
+    doc.text("Formations populaires pour ce métier", marginX, y2);
+    y2 += 20;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(90, 90, 90);
+    doc.text(
+      "Répartition des professionnels en activité par formation",
+      marginX,
+      y2
+    );
+    y2 += 35;
+
+    const boxHeight = 90;
+    const gap = 10;
+    const usableWidth = pageWidth - marginX * 2;
+
+    const colors = [
+      [255, 122, 89],
+      [40, 76, 214],
+      [255, 166, 135],
+      [72, 92, 230],
+      [255, 188, 160],
+    ];
+
+    const totalPct =
+      job.formations.reduce(
+        (acc, f) => acc + (f.marketStat?.pct || 0),
+        0
+      ) || 1;
+
+    let currentX = marginX;
+    let currentY = y2;
+
+    job.formations.forEach((f, idx) => {
+      const pct = f.marketStat?.pct || 0;
+      let width = (pct / totalPct) * usableWidth;
+      if (width < 90) width = 90;
+
+      if (currentX + width > pageWidth - marginX) {
+        currentX = marginX;
+        currentY += boxHeight + gap;
+      }
+
+      const [r, g, b] = colors[idx % colors.length];
+      doc.setFillColor(r, g, b);
+      doc.roundedRect(currentX, currentY, width, boxHeight, 8, 8, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(`#${idx + 1}`, currentX + 10, currentY + 18);
+      doc.setFontSize(12);
+      doc.text(f.name, currentX + 10, currentY + 36);
+      doc.setFontSize(18);
+      doc.text(`${pct}%`, currentX + 10, currentY + 58);
+      doc.setFontSize(8);
+      doc.text("des professionnels", currentX + 10, currentY + 72);
+
+      currentX += width + gap;
+    });
+
+    doc.save(`PathFinder_${job.id}_parcours.pdf`);
+  }
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -499,7 +925,7 @@ export default function CareerPath() {
           <span className="inline-block h-5 w-5 rounded-md bg-white/25 grid place-items-center">
             <svg viewBox="0 0 24 24" className="h-4 w-4">
               <path
-                d="M17 3H7a2 2 0 0 0-2 2v14l7-3 7 3V5a2 2 0 0 0-2-2Z"
+                d="M17 3H7a2 2 0 0 0-2 2v14h14V7l-2-4Z"
                 fill="currentColor"
               />
             </svg>
@@ -508,18 +934,95 @@ export default function CareerPath() {
         </button>
       </div>
 
-      {/* Filtres (cosmétiques) */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <button className="inline-flex items-center gap-2 rounded-xl border bg-white px-3 py-1.5">
+      {/* Filtres */}
+      <div className="mt-4 flex flex-wrap gap-3 items-center relative">
+        <button className="inline-flex items-center gap-2 rounded-xl border bg-white px-3 py-1.5 text-sm">
           <svg viewBox="0 0 24 24" className="h-4 w-4">
             <path d="M3 4h18l-7 8v6l-4 2v-8L3 4Z" fill="currentColor" />
           </svg>
           Filtres
         </button>
-        <button className="rounded-xl border bg-white px-3 py-1.5">Toutes</button>
-        <button className="rounded-xl border bg-white px-3 py-1.5">
-          Tous les prix
-        </button>
+
+        {/* Localisation */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setShowLocationMenu((v) => !v);
+              setShowPriceMenu(false);
+            }}
+            className="inline-flex items-center gap-2 rounded-xl border bg-gray-50 px-3 py-1.5 text-sm"
+          >
+            <span className="text-base">📍</span>
+            <span>{locationLabel}</span>
+            <span className="text-xs">▾</span>
+          </button>
+
+          {showLocationMenu && (
+            <div className="absolute z-20 mt-2 w-40 rounded-xl border bg-white shadow-lg text-sm">
+              {[
+                { id: "all", label: "Toutes" },
+                { id: "paris", label: "Paris" },
+                { id: "lyon", label: "Lyon" },
+                { id: "bordeaux", label: "Bordeaux" },
+                { id: "marseille", label: "Marseille" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    setLocationFilter(opt.id);
+                    setShowLocationMenu(false);
+                  }}
+                  className={`block w-full text-left px-3 py-2 hover:bg-gray-50 ${
+                    locationFilter === opt.id ? "bg-gray-100 font-medium" : ""
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Prix */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setShowPriceMenu((v) => !v);
+              setShowLocationMenu(false);
+            }}
+            className="inline-flex items-center gap-2 rounded-xl border bg-gray-50 px-3 py-1.5 text-sm"
+          >
+            <span className="text-base">💶</span>
+            <span>{priceLabel}</span>
+            <span className="text-xs">▾</span>
+          </button>
+
+          {showPriceMenu && (
+            <div className="absolute z-20 mt-2 w-56 rounded-xl border bg-white shadow-lg text-sm">
+              {[
+                { id: "all", label: "Tous les prix" },
+                { id: "lt5k", label: "Moins de 5 000€" },
+                { id: "5k-10k", label: "5 000€ - 10 000€" },
+                { id: "gt10k", label: "Plus de 10 000€" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    setPriceFilter(opt.id);
+                    setShowPriceMenu(false);
+                  }}
+                  className={`block w-full text-left px-3 py-2 hover:bg-gray-50 ${
+                    priceFilter === opt.id ? "bg-gray-100 font-medium" : ""
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Stats métier */}
@@ -543,77 +1046,13 @@ export default function CareerPath() {
         </h2>
 
         <ul className="relative pl-28 space-y-12">
-          {/* Ligne verticale */}
           <span
             aria-hidden
-            className="pointer-events-none absolute left-9 top-0 bottom-0 w-[3px]
-                 bg-gradient-to-b from-orange-400 via-blue-400 to-orange-400"
+            className="pointer-events-none absolute left-9 top-0 bottom-0 w-[3px] bg-gradient-to-b from-orange-400 via-blue-400 to-orange-400"
           />
 
-          {[
-            {
-              key: "formationInit",
-              title: "Formation initiale",
-              subtitle: "Acquérir les bases techniques et théoriques du métier",
-              right: DURATIONS.formationInit,
-              dot: "orange",
-              badge: null,
-            },
-            {
-              key: "formationChoisie",
-              title:
-                firstValidatedFormation?.name || "M2 Data Science (Université)",
-              subtitle:
-                firstValidatedFormation
-                  ? `${firstValidatedFormation.kind} · ${firstValidatedFormation.location}`
-                  : "Master · France (Sorbonne, PSL, Paris-Saclay…)",
-              right: firstValidatedFormation?.duration || "2 ans",
-              dot: "green",
-              badge: firstValidatedFormation ? "Validé" : null,
-            },
-            {
-              key: "stageAlt",
-              title: "Premier stage / Alternance",
-              subtitle: "Première expérience professionnelle en entreprise",
-              right: DURATIONS.stageAlt,
-              dot: "blue",
-              badge: hasStageOrAlt ? "Validé" : null,
-            },
-            {
-              key: "freelance",
-              title: "Stage en Freelance / Indépendant",
-              subtitle: "Autonomie complète et choix des projets",
-              right: DURATIONS.stageFreelance,
-              dot: "orange",
-              badge: hasFreelanceStage ? "Validé" : null,
-            },
-            {
-              key: "junior",
-              title: "Premier emploi (Junior)",
-              subtitle: "Développer ses compétences sur des projets réels",
-              right: DURATIONS.junior,
-              dot: "blue",
-              badge: hasJunior ? "Validé" : null,
-            },
-            {
-              key: "montee",
-              title: "Montée en compétences",
-              subtitle: "Devenir autonome et expert dans son domaine",
-              right: DURATIONS.montee,
-              dot: "orange",
-              badge: hasInter ? "Validé" : null,
-            },
-            {
-              key: "senior",
-              title: `${job.title} Senior`,
-              subtitle: "Leadership technique et mentorat",
-              right: DURATIONS.senior,
-              dot: "blue",
-              badge: null,
-            },
-          ].map((step) => (
+          {timelineSteps.map((step) => (
             <li key={step.key} className="relative pl-16 md:pl-20">
-              {/* pastille */}
               <span
                 aria-hidden
                 className={[
@@ -626,14 +1065,24 @@ export default function CareerPath() {
                   .join(" ")}
               />
 
-              {/* contenu */}
               <div className="flex items-start justify-between gap-8 ml-0">
                 <div className="flex-1">
                   <div className="font-semibold text-lg">{step.title}</div>
-                  <div className="text-gray-600 text-sm">{step.subtitle}</div>
+                  <div className="text-gray-600 text-sm">
+                    {step.subtitle}
+                  </div>
 
                   {step.badge && (
-                    <span className="mt-1 inline-block rounded-full bg-green-100 text-green-700 text-xs px-2 py-0.5">
+                    <span
+                      className={[
+                        "mt-1 inline-block rounded-full text-xs px-2 py-0.5",
+                        step.badgeTone === "orange"
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-green-100 text-green-700",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
                       {step.badge}
                     </span>
                   )}
@@ -650,13 +1099,21 @@ export default function CareerPath() {
 
       {/* Formations */}
       <section className="mt-8">
-        <div className="text-gray-900 font-semibold">Formations disponibles</div>
+        <div className="text-gray-900 font-semibold">
+          Formations disponibles
+        </div>
         <p className="text-sm text-gray-600">
           Sélectionne la formation qui correspond le mieux à ton projet
         </p>
 
         <div className="mt-4 space-y-6">
-          {job.formations.map((f) => {
+          {filteredFormations.length === 0 && (
+            <div className="text-sm text-gray-500">
+              Aucune formation ne correspond à ces filtres.
+            </div>
+          )}
+
+          {filteredFormations.map((f) => {
             const validated = validatedFormationIds.includes(f.id);
             return (
               <div
@@ -740,7 +1197,9 @@ export default function CareerPath() {
 
       {/* Types d’entreprises */}
       <section className="mt-10">
-        <div className="text-gray-900 font-semibold">Types d'entreprises</div>
+        <div className="text-gray-900 font-semibold">
+          Types d&apos;entreprises
+        </div>
         <p className="text-sm text-gray-600">
           Ajoute-les à une étape : <b>Stage</b>, <b>Alternance</b>,{" "}
           <b>Junior</b> ou <b>Intermédiaire</b>.
@@ -763,7 +1222,9 @@ export default function CareerPath() {
 
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
                   <div className="rounded-xl bg-green-50 p-4">
-                    <div className="font-medium text-green-900">Avantages</div>
+                    <div className="font-medium text-green-900">
+                      Avantages
+                    </div>
                     <ul className="mt-2 text-sm text-green-800 list-disc ml-5">
                       {t.pros.map((p, i) => (
                         <li key={i}>{p}</li>
@@ -772,7 +1233,7 @@ export default function CareerPath() {
                   </div>
                   <div className="rounded-xl bg-amber-50 p-4">
                     <div className="font-medium text-amber-900">
-                      Points d'attention
+                      Points d&apos;attention
                     </div>
                     <ul className="mt-2 text-sm text-amber-800 list-disc ml-5">
                       {t.cons.map((c, i) => (
@@ -800,7 +1261,7 @@ export default function CareerPath() {
                     Statistiques du marché
                   </div>
                   <div className="mt-3 text-sm text-gray-800">
-                    Ont fait un stage dans ce type d'entreprise
+                    Ont fait un stage dans ce type d&apos;entreprise
                   </div>
                   <StatBar pct={t.market.stagePct} color="bg-blue-600" />
                   <div className="text-right text-xs text-gray-500 mt-1">
@@ -818,7 +1279,7 @@ export default function CareerPath() {
 
                 <div className="mt-5">
                   <div className="text-sm font-medium text-gray-900 mb-2">
-                    Ajouter ce type d’entreprise à quelle étape ?
+                    Ajouter ce type d&apos;entreprise à quelle étape ?
                   </div>
                   <div className="grid md:grid-cols-2 gap-3">
                     <button
@@ -857,6 +1318,63 @@ export default function CareerPath() {
         </div>
       </section>
 
+      {/* Sauvegarde & export */}
+      <section className="mt-10 rounded-2xl border border-orange-100 bg-orange-50/40 px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+              ✓
+            </span>
+            <span className="text-gray-700">
+              Dernière sauvegarde :{" "}
+              <span className="font-medium">
+                {lastSavedAt ? formatTime(lastSavedAt) : "—"}
+              </span>
+            </span>
+          </div>
+          <div className="mt-3">
+            <div className="font-semibold text-gray-900">
+              Sauvegarde et export
+            </div>
+            <p className="text-sm text-gray-600">
+              Enregistre ton parcours ou télécharge-le en PDF.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={savePath}
+            className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-orange-600"
+          >
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white/20">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+                <path
+                  d="M17 3H7a2 2 0 0 0-2 2v14h14V7l-2-4Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            Enregistrer
+          </button>
+
+          <button
+            onClick={exportPdf}
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
+          >
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-gray-100">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+                <path
+                  d="M12 3v12.17l3.59-3.58L17 13l-5 5-5-5 1.41-1.41L11 15.17V3h1Zm-7 16h14v2H5v-2Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+            PDF
+          </button>
+        </div>
+      </section>
+
       {!!toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
           <div className="rounded-xl bg-emerald-900 text-white px-4 py-2 shadow-lg text-sm">
@@ -865,18 +1383,12 @@ export default function CareerPath() {
         </div>
       )}
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="mt-6 flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
           className="rounded-xl border bg-white px-4 py-2 hover:bg-gray-50"
         >
           ← Retour
-        </button>
-        <button
-          onClick={savePath}
-          className="rounded-xl bg-orange-500 text-white px-4 py-2 hover:bg-orange-600"
-        >
-          Enregistrer
         </button>
       </div>
     </div>
