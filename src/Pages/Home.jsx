@@ -73,10 +73,10 @@ export default function Home() {
               </span>
             )}
             <Link
-              to="/tests/complet"
+              to="/connexion"
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
             >
-              Commencer le test
+              Se connecter / S'inscrire
             </Link>
             <Link
               to={isLoggedIn ? "/profil" : "/login"}
