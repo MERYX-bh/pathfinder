@@ -1,6 +1,7 @@
 // src/Pages/Home.jsx
 import { Link } from "react-router-dom";
 import imageHome from "../assets/image_home.avif";
+import logoPathfinder from "../assets/logo.png";
 
 /* ---------------- Helpers d'état ---------------- */
 function getAuthState() {
@@ -25,10 +26,14 @@ function getAuthState() {
   return { isLoggedIn, isPremium, email, displayName, testsCompleted, jobsExplored, progress };
 }
 
-/* ===== Icônes inline ===== */
 const LogoPF = () => (
-  <div className="h-8 w-8 rounded-md bg-orange-600 grid place-items-center text-white font-black">PF</div>
+  <img
+    src={logoPathfinder}
+    alt="PathFinder"
+    className="h-8 w-8 object-contain"
+  />
 );
+
 const SparkIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
     <path d="M12 2l1.8 4.7L18 8.5l-4.2 1.7L12 15l-1.8-4.8L6 8.5l4.2-1.8L12 2Z" fill="currentColor"/>
@@ -62,7 +67,9 @@ export default function Home() {
             <LogoPF />
             <div>
               <div className="font-semibold">PathFinder</div>
-              <div className="text-xs text-gray-500 -mt-0.5">Orientation professionnelle</div>
+              <div className="text-xs text-gray-500 -mt-0.5">
+                Orientation professionnelle
+              </div>
             </div>
           </div>
 

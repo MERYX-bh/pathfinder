@@ -1,6 +1,7 @@
 // src/Pages/Auth/Login.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import logoPathfinder from "../../assets/logo.png"; 
 
 export default function Login() {
   const navigate = useNavigate();
@@ -36,13 +37,14 @@ export default function Login() {
       <div className="w-full max-w-xl">
         {/* Logo */}
         <div className="flex flex-col items-center mb-6">
-          <div className="h-12 w-12 rounded-2xl bg-orange-500/90 grid place-items-center shadow-sm">
-            <svg viewBox="0 0 24 24" className="h-6 w-6 text-white">
-              <path
-                d="M12 3a9 9 0 1 0 9 9 9.01 9.01 0 0 0-9-9Zm0 3.5a1 1 0 0 1 1 1V11h3.5a1 1 0 0 1 0 2H12a1 1 0 0 1-1-1V7.5a1 1 0 0 1 1-1Z"
-                fill="currentColor"
+          <div className="h-12 w-12 rounded-2xl grid place-items-center shadow-sm">
+            <div className="h-16 w-16 grid place-items-center">
+              <img
+                src={logoPathfinder}
+                alt="PathFinder Logo"
+                className="h-12 w-12 object-contain"
               />
-            </svg>
+            </div>
           </div>
           <h1 className="mt-2 text-lg font-semibold">PathFinder</h1>
           <p className="text-sm text-gray-600 -mt-0.5">
